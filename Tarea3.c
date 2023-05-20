@@ -38,20 +38,6 @@ void agregarTarea(List* lista, Tarea* estructura){
   pushBack(lista, estructura);
 }
 
-Tarea *reservarMemoria(Tarea* arreglo, int i){
-  Tarea* local = NULL;
-  local = realloc(arreglo, sizeof(Tarea) * ( i + 1));
-  return local;
-}
-
-int compararTareas(const void *pivote, const void *elemento) {
-  Tarea * const *ptrPivote = (Tarea * const *)pivote;
-  Tarea * const *ptrElemento = (Tarea * const *)elemento;
-  
-  if ((*ptrElemento)->prioridad < (*ptrPivote)->prioridad) return 1;
-  return 0;
-}
-
 void tareasPorHacer( List *lista){
   int contador = 0;
   for( Tarea *i = firstList(lista) ; i != NULL ; i = nextList(lista)){
@@ -71,29 +57,25 @@ void tareasPorHacer( List *lista){
   }
 }
 
-void mostrarArreglo(Tarea* *arreglo, int largo){
-  for( int i = 0 ; i < largo   ; i++){
-    if ( arreglo[i] == NULL){
-      return;
-    }
-    int contador = 0;
-    printf(" Tarea: %s ( Prioridad %i )", arreglo[i]->nombre, arreglo[i]->prioridad);
-    if( firstList(arreglo[i]->precedencia) != NULL){
-      for( char* j = firstList(arreglo[i]->precedencia) ; j != NULL ; j = nextList(arreglo[i]->precedencia)){
-        if (contador == 0){
-          printf(" Precedencias: %s ", j);
-          contador++;
-         }
+void completarTarea( List* lista, char nombre[31], int *aux){
+  int numero;
+  for ( Tarea *i = firstList(lista); i != NULL ; i = nextList(lista)){
+    if( strcmp(i->nombre, nombre) == 0){
+      if(i->precedencia != NULL){
+        printf("¿Esta seguro que quiere eliminar la tarea?\n)");
+        printf(" Ingrese 1 para elminar, si ingresa otro numero la tarea no sera eliminada\n");
+        scanf("%i", &numero);
+        if( numero == 1){
+          (*aux) = 1;
+          popCurrent(lista);
+        }
         else{
-          printf(" , %s", j);
+          return;
         }
       }
     }
-    printf("\n");
   }
 }
-
-
 
 int buscarEnLista( List* lista, char tareaBuscada[31]){
   for (Tarea* i = firstList(lista) ; i != NULL ; i = nextList(lista)){
@@ -121,6 +103,44 @@ void establecerPrecedencia(List* lista, char tarea1[31], char tarea2[31]){
   }
 }
 
+int compararTareas(const void *pivote, const void *elemento) {
+  Tarea * const *ptrPivote = (Tarea * const *)pivote;
+  Tarea * const *ptrElemento = (Tarea * const *)elemento;
+  
+  if ((*ptrElemento)->prioridad < (*ptrPivote)->prioridad) return 1;
+  return 0;
+}
+
+void mostrarArreglo(Tarea* *arreglo, int largo){
+  for( int i = 0 ; i < largo   ; i++){
+    if ( arreglo[i] == NULL){
+      return;
+    }
+    int contador = 0;
+    printf(" Tarea: %s ( Prioridad %i )", arreglo[i]->nombre, arreglo[i]->prioridad);
+    if( firstList(arreglo[i]->precedencia) != NULL){
+      for( char* j = firstList(arreglo[i]->precedencia) ; j != NULL ; j = nextList(arreglo[i]->precedencia)){
+        if (contador == 0){
+          printf(" Precedencias: %s ", j);
+          contador++;
+         }
+        else{
+          printf(" , %s", j);
+        }
+      }
+    }
+    printf("\n");
+  }
+}
+
+Tarea *reservarMemoria(Tarea* arreglo, int i){
+  Tarea* local = NULL;
+  local = realloc(arreglo, sizeof(Tarea) * ( i + 1));
+  return local;
+}
+
+
+
 int buscarIndiceEnArreglo(Tarea* *arreglo, int largo, char nombre[31]){
   for( int i = 0 ; i < largo ; i++){
     if( arreglo[i]->precedencia != NULL){
@@ -133,7 +153,6 @@ int buscarIndiceEnArreglo(Tarea* *arreglo, int largo, char nombre[31]){
   }
   return EXIT_FAILURE;
 }
-
 
 //esta funcion busca si la tarea pertenece a una precedencia de otra tarea
 int pertenecePrecedencia(List* lista, char nombre[31]){
@@ -149,6 +168,7 @@ int pertenecePrecedencia(List* lista, char nombre[31]){
   return 2;
 }
 
+
 void ordenarPrioridad(Tarea* *arreglo, int largo, List* lista){
   for( int i = 0 ; i < largo ; i++){
     if( pertenecePrecedencia(lista, arreglo[i]->nombre) == 1){
@@ -162,6 +182,26 @@ void ordenarPrioridad(Tarea* *arreglo, int largo, List* lista){
       }
     }
   }
+}
+
+Tarea* *quitarDelArreglo(Tarea* *arreglo,int *largo,  char nombre[31], int aux){
+  if ( aux != 1){
+    return arreglo;
+  }
+  for(int i = 0 ; i < *largo ; i++){
+    if( strcmp(arreglo[i]->nombre, nombre) == 0){
+      for( int j = i   ; j <  *largo - 1 ; j++){
+        Tarea* aux = arreglo[j];
+        arreglo[j] = arreglo[j+1];
+        arreglo[j+1] = aux;
+        
+      }
+      (*largo) = (*largo) - 1;
+      arreglo = reservarMemoria( arreglo, *largo);
+      return arreglo;
+    }
+  }
+  return arreglo;
 }
 
 void ordenarPrioridad2(Tarea* *arreglo, int largo, List* lista) {
@@ -191,7 +231,6 @@ void ordenarPrioridad3(Tarea* *arreglo, int largo, List* lista) {
   }
 }
 
-
 int main(){
   List *lista = createList();
   Tarea* arreglo = NULL;
@@ -199,6 +238,7 @@ int main(){
   int numeroCont, numero, largoNombre, i = 0, aux = 0;
 
   while(true){
+
     menu();
     scanf("%i", &numeroCont);
     while( numeroCont > 9 || numeroCont < 0){
@@ -267,12 +307,12 @@ int main(){
         scanf(" %[^\n]", nombre);
         largoNombre = strlen(nombre);
       }
-      /*completarTarea(lista, nombre, &aux);
+      completarTarea(lista, nombre, &aux);
       arreglo = quitarDelArreglo(arreglo, &i,  nombre, aux);
       qsort(arreglo, i , sizeof(Tarea *), compararTareas);
       ordenarPrioridad(arreglo, i, lista);
       ordenarPrioridad2(arreglo, i, lista);
-      ordenarPrioridad3(arreglo, i, lista);*/
+      ordenarPrioridad3(arreglo, i, lista);
     }
     if (numeroCont == 5){ // funcion 5
 
