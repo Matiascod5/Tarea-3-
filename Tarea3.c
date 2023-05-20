@@ -52,6 +52,49 @@ int compararTareas(const void *pivote, const void *elemento) {
   return 0;
 }
 
+void tareasPorHacer( List *lista){
+  int contador = 0;
+  for( Tarea *i = firstList(lista) ; i != NULL ; i = nextList(lista)){
+    printf(" Tarea: %s ( Prioridad %i )", i->nombre, i->prioridad);
+    if( firstList(i->precedencia) != NULL){
+      for( char* j = firstList(i->precedencia) ; j != NULL ; j = nextList(i->precedencia)){
+        if (contador == 0){
+          printf(" Precedencias: %s ", j);
+          contador++;
+        }
+        else{
+          printf(" , %s", j);
+        }
+      }
+    }
+    printf("\n");
+  }
+}
+
+void mostrarArreglo(Tarea* *arreglo, int largo){
+  for( int i = 0 ; i < largo   ; i++){
+    if ( arreglo[i] == NULL){
+      return;
+    }
+    int contador = 0;
+    printf(" Tarea: %s ( Prioridad %i )", arreglo[i]->nombre, arreglo[i]->prioridad);
+    if( firstList(arreglo[i]->precedencia) != NULL){
+      for( char* j = firstList(arreglo[i]->precedencia) ; j != NULL ; j = nextList(arreglo[i]->precedencia)){
+        if (contador == 0){
+          printf(" Precedencias: %s ", j);
+          contador++;
+         }
+        else{
+          printf(" , %s", j);
+        }
+      }
+    }
+    printf("\n");
+  }
+}
+
+
+
 int buscarEnLista( List* lista, char tareaBuscada[31]){
   for (Tarea* i = firstList(lista) ; i != NULL ; i = nextList(lista)){
     if ( strcmp( i->nombre, tareaBuscada) == 0){
@@ -211,9 +254,9 @@ int main(){
       ordenarPrioridad3(arreglo, i, lista);
     }
     if (numeroCont == 3){ // funcion 3
-      /*tareasPorHacer( lista);
+      tareasPorHacer( lista);
       printf("\n");
-      mostrarArreglo( arreglo, i);*/
+      mostrarArreglo( arreglo, i);
     }
     if (numeroCont == 4){ // funcion 4
       printf("Ingrese la tarea completada\n");
