@@ -30,33 +30,17 @@ void menu(){
   printf("--------------Para finalizar ingrese 0--------------\n");
 }
 
+//esta funcion mete la estrutura a la casilla i del arreglo
 void meterArreglo(Tarea* *arreglo, Tarea* estructura, int i){
   arreglo[i] = estructura;
 }
 
+//esta funcion agrega la tarea a una list auxiliar
 void agregarTarea(List* lista, Tarea* estructura){
   pushBack(lista, estructura);
 }
 
-void tareasPorHacer( List *lista){
-  int contador = 0;
-  for( Tarea *i = firstList(lista) ; i != NULL ; i = nextList(lista)){
-    printf(" Tarea: %s ( Prioridad %i )", i->nombre, i->prioridad);
-    if( firstList(i->precedencia) != NULL){
-      for( char* j = firstList(i->precedencia) ; j != NULL ; j = nextList(i->precedencia)){
-        if (contador == 0){
-          printf(" Precedencias: %s ", j);
-          contador++;
-        }
-        else{
-          printf(" , %s", j);
-        }
-      }
-    }
-    printf("\n");
-  }
-}
-
+// funcion que completa la tarea indicada, tambien recibe un puntero aux el cual guarda la eleccion del usuario si quiere borrar la tarea, este aux se usa mas adelante en la funcion de completarTarea de el arreglo
 void completarTarea( List* lista, char nombre[31], int *aux){
   int numero;
   for ( Tarea *i = firstList(lista); i != NULL ; i = nextList(lista)){
@@ -77,6 +61,7 @@ void completarTarea( List* lista, char nombre[31], int *aux){
   }
 }
 
+//esta funcion busca si hay una lista con el nombre de la tarea buscada, retorna 1 si la encuentra en caso contrario retorna 0
 int buscarEnLista( List* lista, char tareaBuscada[31]){
   for (Tarea* i = firstList(lista) ; i != NULL ; i = nextList(lista)){
     if ( strcmp( i->nombre, tareaBuscada) == 0){
@@ -85,7 +70,7 @@ int buscarEnLista( List* lista, char tareaBuscada[31]){
   }
   return 0;
 }
-
+// funcoin que establece las precedencias para la lista auxiliar
 void establecerPrecedencia(List* lista, char tarea1[31], char tarea2[31]){
   if( buscarEnLista( lista, tarea1) == 1){
     for (Tarea* i = firstList(lista) ; i != NULL ; i = nextList(lista)){
@@ -96,13 +81,13 @@ void establecerPrecedencia(List* lista, char tarea1[31], char tarea2[31]){
         }
         precedencia* p = malloc( sizeof(precedencia));
         strcpy( p->prece, tarea1);
-        printf("hola1");
         pushBack(i->precedencia, p);
       }
     } 
   }
 }
 
+// esta funcion se ocupa con el quicksort para ordenar el arreglo
 int compararTareas(const void *pivote, const void *elemento) {
   Tarea * const *ptrPivote = (Tarea * const *)pivote;
   Tarea * const *ptrElemento = (Tarea * const *)elemento;
@@ -110,7 +95,7 @@ int compararTareas(const void *pivote, const void *elemento) {
   if ((*ptrElemento)->prioridad < (*ptrPivote)->prioridad) return 1;
   return 0;
 }
-
+// esta funcion muestra el arreglo 
 void mostrarArreglo(Tarea* *arreglo, int largo){
   for( int i = 0 ; i < largo   ; i++){
     if ( arreglo[i] == NULL){
@@ -132,7 +117,7 @@ void mostrarArreglo(Tarea* *arreglo, int largo){
     printf("\n");
   }
 }
-
+// funcion que reserva memoria para el arreglo 
 Tarea *reservarMemoria(Tarea* arreglo, int i){
   Tarea* local = NULL;
   local = realloc(arreglo, sizeof(Tarea) * ( i + 1));
@@ -140,7 +125,7 @@ Tarea *reservarMemoria(Tarea* arreglo, int i){
 }
 
 
-
+//funcion que indica la posicion del arreglo de un nombre buscado
 int buscarIndiceEnArreglo(Tarea* *arreglo, int largo, char nombre[31]){
   for( int i = 0 ; i < largo ; i++){
     if( arreglo[i]->precedencia != NULL){
@@ -168,22 +153,7 @@ int pertenecePrecedencia(List* lista, char nombre[31]){
   return 2;
 }
 
-
-void ordenarPrioridad(Tarea* *arreglo, int largo, List* lista){
-  for( int i = 0 ; i < largo ; i++){
-    if( pertenecePrecedencia(lista, arreglo[i]->nombre) == 1){
-      int indice = buscarIndiceEnArreglo(arreglo, largo, arreglo[i]->nombre);
-      if( i < indice){
-        for( int j = i ; j < indice - 1 ; j++){
-          Tarea* aux = arreglo[j];
-          arreglo[j] = arreglo[j+1];
-          arreglo[j+1] = aux;
-        }
-      }
-    }
-  }
-}
-
+// ocupando el auxiliar de la funcion completar tarea de la lista, si este es 1 se elimina la tarea ingresada, ademas se recibe el puntero del largo para disminuirlo y hacer un realloc , en el caso contrario la funcion retorna el arreglo sin modificar
 Tarea* *quitarDelArreglo(Tarea* *arreglo,int *largo,  char nombre[31], int aux){
   if ( aux != 1){
     return arreglo;
@@ -204,19 +174,54 @@ Tarea* *quitarDelArreglo(Tarea* *arreglo,int *largo,  char nombre[31], int aux){
   return arreglo;
 }
 
-void ordenarPrioridad2(Tarea* *arreglo, int largo, List* lista) {
-  for (int i = 0; i < largo - 1; i++) {  // Ajustar la condición del bucle
-    if (arreglo[i]->precedencia != NULL) {
-      char* a = firstList(arreglo[i]->precedencia);
-      if (strcmp(a, arreglo[i+1]->nombre) == 0) {
-        Tarea* aux = arreglo[i];
-        arreglo[i] = arreglo[i+1];
-        arreglo[i+1] = aux;
+//esta funcion es una de 3, en esta funcion primero se verifica se la casilla i es precedencia de otra tarea, en caso de que lo sea , se ordena de forma que la casilla i quede detrar de la que es precedencia
+void ordenarPrioridad(Tarea* *arreglo, int largo, List* lista){
+  for( int i = 0 ; i < largo ; i++){
+    if( pertenecePrecedencia(lista, arreglo[i]->nombre) == 1){
+      int indice = buscarIndiceEnArreglo(arreglo, largo, arreglo[i]->nombre);
+      if( i < indice){
+        for( int j = i ; j < indice - 1 ; j++){
+          Tarea* aux = arreglo[j];
+          arreglo[j] = arreglo[j+1];
+          arreglo[j+1] = aux;
+        }
+      }
+      else{
+        for( int j = indice  ; j > i + 1  ; j--){
+          Tarea* aux = arreglo[j];
+          arreglo[j] = arreglo[j-1];
+          arreglo[j-1] = aux;
+        }
       }
     }
   }
 }
 
+
+
+// esta funcion es la segunda para ordenar por prioridad, primero se verifica si la lista de precedencias de la casilla i es distinto de null, si es distinto de null se verifica si la casilla i + 1 pertenece a la lista de precedencia de la lista de la casilla i, si se cumple se cambian de lugar
+void ordenarPrioridad2(Tarea* *arreglo, int largo, List* lista) {
+  for (int i = 0; i < largo - 1; i++) {  // Ajustar la condición del bucle
+    if (arreglo[i]->precedencia != NULL) {
+      char* a = firstList(arreglo[i]->precedencia);
+      if( arreglo[i+1]->prioridad != NULL){
+        if (strcmp(a, arreglo[i+1]->nombre) == 0) {
+          Tarea* aux = arreglo[i];
+          arreglo[i] = arreglo[i+1];
+          arreglo[i+1] = aux;
+        }
+      }
+
+    }
+  }
+}
+
+
+
+
+
+
+//esta es la ultima funcion para ordenar por prioridad, primero se verifica si la lista de precedencias de la casilla i es nula, si es nula se verifica si la lista de precedencias de la casilla i + 1 es distinto de null y la tarea de la casilla i esta dentro de la lista, si se cumple se ordena 
 void ordenarPrioridad3(Tarea* *arreglo, int largo, List* lista) {
   for (int i = 0; i < largo - 1; i++) {
     if (arreglo[i]->precedencia == NULL) {
@@ -231,9 +236,12 @@ void ordenarPrioridad3(Tarea* *arreglo, int largo, List* lista) {
   }
 }
 
-int main(){
-  List *lista = createList();
-  Tarea* arreglo = NULL;
+
+
+
+int main ( ){
+  List *lista = createList(); // se crea una lista auxiliar
+  Tarea* arreglo = NULL; // se crea un vector dinamico que se utilizara para ordenar
   char nombre[31], nombre2[31];
   int numeroCont, numero, largoNombre, i = 0, aux = 0;
 
@@ -289,13 +297,14 @@ int main(){
         largoNombre = strlen(nombre2);
       }
       establecerPrecedencia(lista, nombre, nombre2);
+      
       ordenarPrioridad(arreglo, i, lista);
-      ordenarPrioridad2(arreglo, i, lista);
       ordenarPrioridad3(arreglo, i, lista);
+      ordenarPrioridad2(arreglo, i, lista);
+      
+      
     }
     if (numeroCont == 3){ // funcion 3
-      tareasPorHacer( lista);
-      printf("\n");
       mostrarArreglo( arreglo, i);
     }
     if (numeroCont == 4){ // funcion 4
@@ -313,6 +322,7 @@ int main(){
       ordenarPrioridad(arreglo, i, lista);
       ordenarPrioridad2(arreglo, i, lista);
       ordenarPrioridad3(arreglo, i, lista);
+      // al quitar un elemento del arreglo se debe ordenar denuevo
     }
     if (numeroCont == 5){ // funcion 5
 
