@@ -13,6 +13,8 @@ typedef struct{
   List *precedencia;
 } Tarea;
 
+pene
+
 typedef struct{
   char prece[31];
 } precedencia;
